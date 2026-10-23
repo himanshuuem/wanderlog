@@ -1,8 +1,9 @@
-import { createPool } from "../src/db.js";
+import { createPool, ensureSchema } from "../src/db.js";
 import { setupDatabase } from "../src/setup.js";
 
 const pool = createPool();
 try {
+  await ensureSchema(pool);
   const count = await setupDatabase(pool);
   console.log(`✔ schema ready, ${count} countries loaded`);
 } catch (error) {
