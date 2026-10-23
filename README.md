@@ -2,6 +2,8 @@
 
 > A family travel tracker: every traveller gets their own colour, and the countries they've visited light up on a shared world map. **Click the map** to add or remove a country. Built with Express, EJS and **PostgreSQL**.
 
+**🔗 Live demo:** https://wanderlog-5ged.onrender.com/ *(free tier: the first visit after idle takes ~30–60s to wake up)*
+
 [![test](https://github.com/himanshuuem/wanderlog/actions/workflows/test.yml/badge.svg)](https://github.com/himanshuuem/wanderlog/actions/workflows/test.yml)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-5-000?logo=express)
