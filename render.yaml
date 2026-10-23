@@ -1,0 +1,17 @@
+databases:
+  - name: wanderlog-db
+    plan: free
+    databaseName: wanderlog
+services:
+  - type: web
+    name: wanderlog
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run db:setup
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: wanderlog-db
+          property: connectionString

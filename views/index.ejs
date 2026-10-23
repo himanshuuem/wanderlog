@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= current ? `${current.name}'s map` : "Family map" %> · Wanderlog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body style="--me: <%= current ? current.color : '#0f766e' %>">
+  <header class="top">
+    <h1>Wanderlog</h1>
+    <p>Every country your family has set foot in, on one map.</p>
+  </header>
+
+  <nav class="people" aria-label="Travellers">
+    <a href="/" class="person <%= !current ? 'on' : '' %>" style="--c: #0f766e">👨‍👩‍👧 Everyone</a>
+    <% travellers.forEach((t) => { %>
+      <a href="/?t=<%= t.id %>" class="person <%= current && current.id === t.id ? 'on' : '' %>" style="--c: <%= t.color %>">
+        <span class="dot"></span><%= t.name %> <small><%= t.visited %></small>
+      </a>
+    <% }) %>
+    <details class="add-person">
+      <summary>＋ Add traveller</summary>
+      <form method="post" action="/travellers" class="inline">
+        <input name="name" placeholder="Name" required maxlength="30" aria-label="Traveller name">
+        <input name="color" type="color" value="<%= nextColor %>" aria-label="Map colour">
+        <button type="submit">Add</button>
+      </form>
+    </details>
+  </nav>
+
+  <% if (message) { %><p class="toast ok" role="status"><%= message %></p><% } %>
+  <% if (error) { %><p class="toast err" role="alert"><%= error %></p><% } %>
+
+  <main class="layout">
+    <section class="map-card">
+      <% if (current) { %>
+        <div class="stat-row">
+          <p class="stat"><strong><%= visits.length %></strong> countries · <strong><%= (visits.length / total * 100).toFixed(1) %>%</strong> of the world</p>
+          <p class="hint">Tip: click a country on the map to add or remove it.</p>
+        </div>
+      <% } else { %>
+        <p class="stat"><strong><%= Object.keys(family).length %></strong> countries visited by the family · darker = more of you went</p>
+      <% } %>
+      <svg class="map <%= current ? 'editable' : '' %>" viewBox="<%= world.viewBox %>" role="img" aria-label="World map of visited countries" data-traveller="<%= current ? current.id : '' %>">
+        <% world.locations.forEach((loc) => {
+             const visited = current ? visitedCodes.has(loc.id) : family[loc.id] > 0;
+             const shade = current ? 1 : Math.min(1, 0.35 + (family[loc.id] ?? 0) / Math.max(1, travellers.length) * 0.65); %>
+          <path d="<%= loc.path %>" data-code="<%= loc.id %>" class="<%= visited ? 'visited' : '' %>" <% if (visited) { %>style="fill-opacity: <%= shade.toFixed(2) %>"<% } %>><title><%= loc.name %><%= !current && family[loc.id] ? ` · ${family[loc.id]} traveller${family[loc.id] > 1 ? "s" : ""}` : "" %></title></path>
+        <% }) %>
+      </svg>
+      <% if (current) { %>
+        <form method="post" action="/travellers/<%= current.id %>/toggle" id="toggleForm" hidden><input name="code"></form>
+      <% } %>
+    </section>
+
+    <% if (current) { %>
+      <aside class="side">
+        <form method="post" action="/travellers/<%= current.id %>/visits" class="add-country">
+          <label for="country">Add a country</label>
+          <div class="inline">
+            <input id="country" name="country" list="country-list" placeholder="e.g. Japan or JP" required minlength="2" autocomplete="off">
+            <button type="submit">Add</button>
+          </div>
+          <datalist id="country-list"><% countryNames.forEach((n) => { %><option value="<%= n %>"><% }) %></datalist>
+        </form>
+        <h2>Visited</h2>
+        <% if (!visits.length) { %><p class="muted">No stamps yet. Where have you been?</p><% } %>
+        <ul class="stamps">
+          <% visits.forEach((v) => { %><li><%= v.name %></li><% }) %>
+        </ul>
+        <form method="post" action="/travellers/<%= current.id %>/delete" class="danger-zone" data-confirm="Remove <%= current.name %> and all their visits?">
+          <button type="submit">Remove <%= current.name %></button>
+        </form>
+      </aside>
+    <% } %>
+  </main>
+
+  <footer class="foot">Map: <a href="https://github.com/VictorCazanave/svg-maps">svg-maps/world</a> (CC BY 4.0) · Built by <a href="https://github.com/himanshuuem">Himanshu</a></footer>
+  <script src="/map.js" defer></script>
+</body>
+</html>
